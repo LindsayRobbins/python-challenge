@@ -2,78 +2,78 @@ import os
 import csv
 
 # setting the file path for my election data csv file
-election_data_csv = os.path.join("Resources", "election_data.csv")
+inputFile = os.path.join("Resources", "election_data.csv")
 
-# setting the voter count
-totalVotes = 0
+outputfile = os.path.join("Analysis", "Election_Results.txt")
 
-#setting the candidate list
-candidateList = []
+totalVotes = 0 # variable that holds the number of votes
+candidateList = [] # list that holds the candidates in the data
+candidateVotes ={} # dicitonary that will hold the votes per candidate
+winningCount = 0 # variable hold the winning count
+winningCandidate = "" # variable to hold the winning candidate
 
-#tracking the candidate votes
-votes = {}
-
-#tracking the winning candidate name and vote
-winner = ""
-winnerVotes = 0
-
-
-# opening the file to read
-with open(election_data_csv, "r") as csvFile:
+with open(inputFile, "r") as csvFile:
     # creating the reader object
     csvReader = csv.reader(csvFile, delimiter=",")
     # reading the headers
     csvheader = next(csvReader)
 
+    # rows will be lists
+        # index 0 is the ballot ID
+        # index 1 is the county
+        # index 3 is the candidate
+    
+    # for each row
     for row in csvReader:
-        # adding to the total vote count
-        totalVotes +=1
-        # getting the candidate names from rows
-        candidate_name = row[2]
+        # add on to the total votes
+        totalVotes += 1
 
-        # statement for if the candidate name is not in the candidate options
-        if candidate_name not in candidateList:
-            candidateList.append(candidate_name)
-            votes[candidate_name] = 0
-        # adding votes to the candidates count
-        votes[candidate_name] += 1
+        # check to see if the candidate is in the list of candidates
+        if row[2] not in candidateList:
+            # if the candidate is not in the list add the candidate to the list
+            candidateList.append(row[2])
 
-    # print total votes to terminal
-    print("Election Results")
-    print("----------------------")
-    print(f"Total Votes: {str(totalVotes)}")
-    print("----------------------")
-
-      
-    #determine total votes and percent per candidate 
-    for candidate in votes:
-        # calculate vote count and percent of votes
-        voteCount = votes[candidate]
-        votesPct = float(voteCount) / float(totalVotes) * 100
-        results =(
-            f"{candidate}: {votesPct:.3f}% ({voteCount:})")
-        # saving results to the output file
+            # add the value to the dictionary
+            # { "key": value}
+            # astart teh count at 1 for the votes
+            candidateVotes[row[2]] = 1
         
-        print(results)
-        print("--------------------")
-        
-    
+        else: 
+            # the candidate is in the list of candidates
+            # add a vote to that candidate
+            candidateVotes[row[2]] += 1
 
-    #determine the winner using an if statement
-    if (voteCount > winnerVotes):
-        winningcount = voteCount
-        winner = candidate 
-          
-        # I had to hard code the winner here. I couldn't get my code to give me the winner, it keeps giving me the loser
-        print(f"Winner: Diana DeGette")
-           
 
-    # setting the file path for my output
-    outputlocation = os.path.join("Analysis", "Election_Results.txt")
+voteOutput = ""
+for candidate in candidateVotes:
+    # get the vote count and the percentage of the votes
+    votes = candidateVotes.get(candidate)
+    votePct = (float(votes) / float(totalVotes)) * 100.00
     
-    with open(outputlocation, "w") as txtFile:
-        txtFile.write("Election Results\n")
-        txtFile.write("----------------------\n")
-        txtFile.write(f"Total Votes: {str(totalVotes)}\n")
-        txtFile.write("----------------------\n")
-        txtFile.write(f"Winner: Diana DeGette") #again I had to hard code the winner here because I can't figure out why it gives me the loser instead of the winner.
+    voteOutput += f"{candidate}: {votePct:.3f}% ({votes}) \n"
+    
+    
+    if votes > winningCount:
+        winningCount = votes
+        # update the winning candidate
+        winningCandidate = candidate
+
+winningCandidateOutput = f"Winner: {winningCandidate}\n--------------------------"
+
+# create an output variable to hold the output
+output = (
+    f"Election Results\n"
+    f"--------------------------\n"
+    f"Total Votes: {totalVotes}\n"
+    f"--------------------------\n"
+    f"{voteOutput}\n"
+    f"--------------------------\n"
+    f"{winningCandidateOutput}"
+)
+# print the output to the terminal
+print(output)
+
+# print the results and export the data to a text file
+with open(outputfile, "w") as textFile:
+# write the output to the text file
+    textFile.write(output)
